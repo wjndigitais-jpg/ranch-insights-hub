@@ -353,13 +353,13 @@ function Index() {
             <X className="h-6 w-6" />
           </button>
           <img
-            src={GALLERY[lightbox].src}
-            alt={GALLERY[lightbox].caption}
+            src={GALLERY[lightbox]!.src}
+            alt={GALLERY[lightbox]!.caption}
             className="max-h-[75vh] max-w-full rounded-xl object-contain"
             onClick={(e) => e.stopPropagation()}
           />
           <p className="mt-4 text-center text-sm font-semibold text-forest-foreground">
-            {GALLERY[lightbox].caption}
+            {GALLERY[lightbox]!.caption}
           </p>
           <div className="mt-4 flex gap-3" onClick={(e) => e.stopPropagation()}>
             <button
