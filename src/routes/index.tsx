@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   BedDouble,
   Users,
@@ -154,15 +154,17 @@ function WhatsAppIcon({ className }: { className?: string }) {
     </svg>
   );
 }
-
 function Index() {
   const [lightbox, setLightbox] = useState<number | null>(null);
   const [menuOpen, setMenuOpen] = useState(false);
   const [openFaq, setOpenFaq] = useState<number | null>(0);
-  const carouselRef = useRef<HTMLDivElement>(null);
+  const [scrolled, setScrolled] = useState(false);
 
-  const scrollCarousel = useCallback((dir: number) => {
-    carouselRef.current?.scrollBy({ left: dir * 320, behavior: "smooth" });
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 40);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   useEffect(() => {
@@ -178,24 +180,51 @@ function Index() {
   }, [lightbox]);
 
   const navItems = [
-    { label: "Fotos", href: "#fotos" },
-    { label: "Comodidades", href: "#comodidades" },
     { label: "O Rancho", href: "#sobre" },
+    { label: "Galeria", href: "#fotos" },
+    { label: "Comodidades", href: "#comodidades" },
     { label: "Localização", href: "#localizacao" },
     { label: "Dúvidas", href: "#faq" },
   ];
 
+  const experiences = [
+    {
+      img: piscinaVista,
+      kicker: "I — Água",
+      title: "Dias lentos à beira da piscina",
+      text: "Sol de Epitácio, mesa à sombra do ombrelone e um mergulho sempre que der vontade. A área externa é inteira do seu grupo.",
+    },
+    {
+      img: areaGourmet,
+      kicker: "II — Mesa",
+      title: "Churrasco que vira tradição",
+      text: "Espaço gourmet com churrasqueira e cozinha equipada para receber todo mundo — do café da manhã ao jantar sem pressa.",
+    },
+    {
+      img: sinuca,
+      kicker: "III — Noite",
+      title: "Sinuca, conversa e boas risadas",
+      text: "Quando o sol se põe, a diversão continua: mesa de sinuca, ambientes climatizados e TV para fechar o dia.",
+    },
+  ];
+
+  const linkCls = "text-[0.7rem] font-semibold uppercase tracking-[0.22em] transition-colors";
+
   return (
     <div className="min-h-screen bg-background text-foreground">
       {/* Header */}
-      <header className="fixed inset-x-0 top-0 z-40 border-b border-border/60 bg-background/90 backdrop-blur">
-        <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-4 py-3">
-          <a href="#topo" className="font-display text-xl font-bold text-primary">
-            Recanto Barreto
+      <header
+        className={`fixed inset-x-0 top-0 z-40 transition-all duration-300 ${
+          scrolled ? "border-b border-border bg-background/95 backdrop-blur" : "bg-transparent"
+        }`}
+      >
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-5 py-4 lg:px-10">
+          <a href="#topo" className="font-display text-xl italic tracking-wide text-foreground">
+            Recanto <span className="not-italic font-semibold">Barreto</span>
           </a>
-          <nav className="hidden items-center gap-6 text-sm font-semibold md:flex">
+          <nav className="hidden items-center gap-8 lg:flex">
             {navItems.map((item) => (
-              <a key={item.href} href={item.href} className="text-foreground/80 transition-colors hover:text-primary">
+              <a key={item.href} href={item.href} className={`${linkCls} text-foreground/70 hover:text-clay`}>
                 {item.label}
               </a>
             ))}
@@ -205,28 +234,23 @@ function Index() {
               href={WHATSAPP_URL}
               target="_blank"
               rel="noopener noreferrer"
-              className="hidden items-center gap-2 rounded-full bg-primary px-4 py-2 text-sm font-bold text-primary-foreground shadow transition-transform hover:scale-105 sm:inline-flex"
+              className={`${linkCls} hidden border border-foreground px-5 py-2.5 text-foreground hover:bg-foreground hover:text-background sm:inline-block`}
             >
-              <WhatsAppIcon className="h-4 w-4" />
               Reservar
             </a>
-            <button
-              className="rounded-md p-2 md:hidden"
-              onClick={() => setMenuOpen((v) => !v)}
-              aria-label="Abrir menu"
-            >
+            <button className="p-2 lg:hidden" onClick={() => setMenuOpen((v) => !v)} aria-label="Abrir menu">
               <Menu className="h-6 w-6" />
             </button>
           </div>
         </div>
         {menuOpen && (
-          <nav className="border-t border-border bg-background px-4 py-3 md:hidden">
+          <nav className="border-t border-border bg-background px-5 py-4 lg:hidden">
             {navItems.map((item) => (
               <a
                 key={item.href}
                 href={item.href}
                 onClick={() => setMenuOpen(false)}
-                className="block py-2 text-sm font-semibold text-foreground/80"
+                className={`${linkCls} block py-3 text-foreground/80`}
               >
                 {item.label}
               </a>
@@ -235,108 +259,135 @@ function Index() {
         )}
       </header>
 
-      {/* Hero */}
-      <section id="topo" className="relative flex min-h-[92vh] items-end pt-16">
-        <img
-          src={heroImg}
-          alt="Piscina e área externa do Recanto Barreto"
-          className="absolute inset-0 h-full w-full object-cover"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-forest/95 via-forest/40 to-transparent" />
-        <div className="relative mx-auto w-full max-w-6xl px-4 pb-14 pt-32">
-          <div className="max-w-2xl">
-            <span className="inline-block rounded-full bg-sun px-4 py-1 text-xs font-extrabold uppercase tracking-wide text-sun-foreground">
-              Disponível para Natal e Ano Novo
-            </span>
-            <h1 className="font-display mt-4 text-4xl font-bold leading-tight text-forest-foreground sm:text-5xl lg:text-6xl">
-              Seu refúgio em Presidente Epitácio
-            </h1>
-            <p className="mt-4 text-lg text-forest-foreground/90 sm:text-xl">
-              Conforto, lazer e espaço para momentos inesquecíveis com sua família e amigos —
-              acomoda até 10 pessoas com privacidade total.
-            </p>
-            <div className="mt-6 flex flex-wrap gap-3">
-              <a
-                href={WHATSAPP_URL}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="inline-flex items-center gap-2 rounded-full bg-sun px-6 py-3 text-base font-extrabold text-sun-foreground shadow-lg transition-transform hover:scale-105"
-              >
-                <WhatsAppIcon className="h-5 w-5" />
-                Consultar datas no WhatsApp
-              </a>
-              <a
-                href="#fotos"
-                className="inline-flex items-center gap-2 rounded-full border-2 border-forest-foreground/70 px-6 py-3 text-base font-bold text-forest-foreground transition-colors hover:bg-forest-foreground/10"
-              >
-                Ver fotos
-              </a>
-            </div>
-            <div className="mt-6 flex flex-wrap gap-2">
-              {[
-                { icon: Wifi, label: "Wi-Fi" },
-                { icon: Waves, label: "Piscina" },
-                { icon: Snowflake, label: "Ar-condicionado" },
-                { icon: Users, label: "Até 10 pessoas" },
-              ].map(({ icon: Icon, label }) => (
-                <span
-                  key={label}
-                  className="inline-flex items-center gap-1.5 rounded-full bg-forest-foreground/15 px-3 py-1.5 text-xs font-bold text-forest-foreground backdrop-blur"
-                >
-                  <Icon className="h-3.5 w-3.5" />
-                  {label}
-                </span>
-              ))}
-            </div>
+      {/* Hero editorial */}
+      <section id="topo" className="mx-auto grid max-w-7xl gap-10 px-5 pb-16 pt-28 lg:grid-cols-12 lg:gap-12 lg:px-10 lg:pt-32">
+        <div className="flex flex-col justify-center lg:col-span-5">
+          <p className={`${linkCls} text-clay`}>Presidente Epitácio · SP</p>
+          <h1 className="font-display mt-6 text-5xl leading-[1.05] text-foreground sm:text-6xl lg:text-7xl">
+            Um refúgio
+            <br />
+            <em className="text-primary">para desacelerar</em>
+          </h1>
+          <p className="mt-6 max-w-md text-lg leading-relaxed text-muted-foreground">
+            Rancho inteiro, só para o seu grupo. Piscina, área gourmet e conforto para até 10
+            pessoas, a poucos minutos do Rio Paraná.
+          </p>
+          <div className="mt-10 flex flex-wrap items-center gap-6">
+            <a
+              href={WHATSAPP_URL}
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`${linkCls} inline-flex items-center gap-3 bg-primary px-7 py-4 text-primary-foreground hover:bg-forest`}
+            >
+              <WhatsAppIcon className="h-4 w-4" />
+              Consultar datas
+            </a>
+            <a href="#fotos" className={`${linkCls} border-b border-foreground/40 pb-1 text-foreground hover:border-clay hover:text-clay`}>
+              Ver galeria
+            </a>
           </div>
+          <p className="mt-10 text-sm italic text-muted-foreground font-display">
+            Datas abertas para Natal e Ano Novo · pagamento em até 3x
+          </p>
+        </div>
+        <div className="relative lg:col-span-7">
+          <img
+            src={heroImg}
+            alt="Piscina e área externa do Recanto Barreto"
+            className="h-[60vh] min-h-[380px] w-full rounded-t-[999px] object-cover lg:h-[78vh]"
+          />
+          <img
+            src={piscinaNoite}
+            alt="Piscina ao entardecer"
+            className="absolute -bottom-8 -left-6 hidden h-48 w-40 border-8 border-background object-cover shadow-xl md:block"
+          />
         </div>
       </section>
 
-      {/* Galeria */}
-      <section id="fotos" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-16">
-        <div className="flex items-end justify-between gap-4">
-          <div>
-            <h2 className="font-display text-3xl font-bold text-foreground sm:text-4xl">Conheça cada cantinho</h2>
-            <p className="mt-2 text-muted-foreground">Arraste para o lado e toque para ampliar.</p>
-          </div>
-          <div className="hidden gap-2 sm:flex">
-            <button
-              onClick={() => scrollCarousel(-1)}
-              className="rounded-full border border-border p-2 transition-colors hover:bg-secondary"
-              aria-label="Fotos anteriores"
-            >
-              <ChevronLeft className="h-5 w-5" />
-            </button>
-            <button
-              onClick={() => scrollCarousel(1)}
-              className="rounded-full border border-border p-2 transition-colors hover:bg-secondary"
-              aria-label="Próximas fotos"
-            >
-              <ChevronRight className="h-5 w-5" />
-            </button>
-          </div>
-        </div>
-        <div
-          ref={carouselRef}
-          className="mt-8 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-4 [scrollbar-width:thin]"
-        >
-          {GALLERY.map((photo, i) => (
-            <button
-              key={photo.caption}
-              onClick={() => setLightbox(i)}
-              className="group relative w-72 shrink-0 snap-start overflow-hidden rounded-2xl shadow-md"
-            >
-              <img
-                src={photo.src}
-                alt={photo.caption}
-                loading="lazy"
-                className="h-52 w-full object-cover transition-transform duration-300 group-hover:scale-105"
-              />
-              <span className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-forest/90 to-transparent px-3 pb-2 pt-8 text-left text-xs font-semibold text-forest-foreground">
-                {photo.caption}
-              </span>
-            </button>
+      {/* Faixa de números */}
+      <section className="border-y border-border bg-sand">
+        <div className="mx-auto grid max-w-7xl grid-cols-2 divide-border px-5 lg:grid-cols-4 lg:divide-x lg:px-10">
+          {[
+            ["10", "hóspedes"],
+            ["2", "quartos · 1 suíte"],
+            ["1", "piscina privativa"],
+            ["3x", "para parcelar"],
+          ].map(([n, l]) => (
+            <div key={l} className="py-8 text-center">
+              <p className="font-display text-4xl text-primary">{n}</p>
+              <p className={`${linkCls} mt-2 text-muted-foreground`}>{l}</p>
+            </div>
           ))}
+        </div>
+      </section>
+
+      {/* Sobre */}
+      <section id="sobre" className="mx-auto max-w-4xl scroll-mt-24 px-5 py-24 text-center">
+        <p className={`${linkCls} text-clay`}>O Rancho</p>
+        <h2 className="font-display mt-5 text-3xl leading-snug sm:text-5xl">
+          Onde o tempo passa devagar e as melhores lembranças acontecem.
+        </h2>
+        <p className="mx-auto mt-8 max-w-2xl text-lg leading-relaxed text-muted-foreground">
+          No Jardim Aeroporto, o Recanto Barreto reúne o que um fim de semana perfeito pede: verde ao
+          redor, piscina, churrasqueira e uma casa confortável com 2 quartos — um deles suíte — para
+          reunir família e amigos com total privacidade.
+        </p>
+      </section>
+
+      {/* Experiências em zigue-zague */}
+      <section className="mx-auto max-w-7xl space-y-24 px-5 pb-24 lg:px-10">
+        {experiences.map((exp, i) => (
+          <div key={exp.title} className="grid items-center gap-10 lg:grid-cols-2 lg:gap-20">
+            <img
+              src={exp.img}
+              alt={exp.title}
+              loading="lazy"
+              className={`h-[420px] w-full object-cover ${i % 2 ? "lg:order-2" : ""}`}
+            />
+            <div className={i % 2 ? "lg:order-1 lg:text-right" : ""}>
+              <p className="font-display italic text-clay">{exp.kicker}</p>
+              <h3 className="font-display mt-3 text-3xl sm:text-4xl">{exp.title}</h3>
+              <p className={`mt-5 max-w-md text-lg leading-relaxed text-muted-foreground ${i % 2 ? "lg:ml-auto" : ""}`}>
+                {exp.text}
+              </p>
+            </div>
+          </div>
+        ))}
+      </section>
+
+      {/* Galeria mosaico */}
+      <section id="fotos" className="scroll-mt-24 bg-forest py-24 text-forest-foreground">
+        <div className="mx-auto max-w-7xl px-5 lg:px-10">
+          <div className="flex flex-wrap items-end justify-between gap-4">
+            <div>
+              <p className={`${linkCls} text-sun`}>Galeria</p>
+              <h2 className="font-display mt-4 text-4xl sm:text-5xl">Cada cantinho</h2>
+            </div>
+            <p className="max-w-xs text-sm text-forest-foreground/70">Toque em uma foto para ampliar.</p>
+          </div>
+          <div className="mt-12 grid auto-rows-[180px] grid-cols-2 gap-3 md:auto-rows-[220px] md:grid-cols-4">
+            {GALLERY.map((photo, i) => {
+              const span =
+                i === 0 ? "col-span-2 row-span-2" : i === 3 ? "md:row-span-2" : i === 5 ? "col-span-2" : "";
+              return (
+                <button
+                  key={photo.caption}
+                  onClick={() => setLightbox(i)}
+                  className={`group relative overflow-hidden ${span}`}
+                >
+                  <img
+                    src={photo.src}
+                    alt={photo.caption}
+                    loading="lazy"
+                    className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-105"
+                  />
+                  <span className="absolute inset-0 flex items-end bg-gradient-to-t from-forest/80 to-transparent p-4 text-left text-sm opacity-0 transition-opacity group-hover:opacity-100">
+                    {photo.caption}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </section>
 
@@ -346,32 +397,27 @@ function Index() {
           className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-forest/95 p-4"
           onClick={() => setLightbox(null)}
         >
-          <button
-            className="absolute right-4 top-4 rounded-full bg-forest-foreground/15 p-2 text-forest-foreground"
-            aria-label="Fechar"
-          >
-            <X className="h-6 w-6" />
+          <button className="absolute right-4 top-4 p-2 text-forest-foreground" aria-label="Fechar">
+            <X className="h-7 w-7" />
           </button>
           <img
             src={GALLERY[lightbox]!.src}
             alt={GALLERY[lightbox]!.caption}
-            className="max-h-[75vh] max-w-full rounded-xl object-contain"
+            className="max-h-[75vh] max-w-full object-contain"
             onClick={(e) => e.stopPropagation()}
           />
-          <p className="mt-4 text-center text-sm font-semibold text-forest-foreground">
-            {GALLERY[lightbox]!.caption}
-          </p>
+          <p className="font-display mt-4 text-center italic text-forest-foreground">{GALLERY[lightbox]!.caption}</p>
           <div className="mt-4 flex gap-3" onClick={(e) => e.stopPropagation()}>
             <button
               onClick={() => setLightbox((lightbox - 1 + GALLERY.length) % GALLERY.length)}
-              className="rounded-full bg-forest-foreground/15 p-2 text-forest-foreground"
+              className="border border-forest-foreground/40 p-2 text-forest-foreground"
               aria-label="Foto anterior"
             >
               <ChevronLeft className="h-5 w-5" />
             </button>
             <button
               onClick={() => setLightbox((lightbox + 1) % GALLERY.length)}
-              className="rounded-full bg-forest-foreground/15 p-2 text-forest-foreground"
+              className="border border-forest-foreground/40 p-2 text-forest-foreground"
               aria-label="Próxima foto"
             >
               <ChevronRight className="h-5 w-5" />
@@ -381,229 +427,146 @@ function Index() {
       )}
 
       {/* Comodidades */}
-      <section id="comodidades" className="scroll-mt-20 bg-secondary/60 py-16">
-        <div className="mx-auto max-w-6xl px-4">
-          <h2 className="font-display text-center text-3xl font-bold sm:text-4xl">
-            Tudo para o seu conforto
-          </h2>
-          <p className="mx-auto mt-2 max-w-xl text-center text-muted-foreground">
-            Estrutura completa para você só se preocupar em aproveitar.
-          </p>
-          <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <section id="comodidades" className="mx-auto max-w-7xl scroll-mt-24 px-5 py-24 lg:px-10">
+        <div className="grid gap-12 lg:grid-cols-12">
+          <div className="lg:col-span-4">
+            <p className={`${linkCls} text-clay`}>Comodidades</p>
+            <h2 className="font-display mt-4 text-4xl leading-tight">Pensado para você só aproveitar</h2>
+            <img src={sala} alt="Sala de estar" loading="lazy" className="mt-8 hidden h-72 w-full object-cover lg:block" />
+          </div>
+          <ul className="grid gap-x-12 sm:grid-cols-2 lg:col-span-8">
             {AMENITIES.map(({ icon: Icon, title, desc }) => (
-              <div
-                key={title}
-                className="rounded-2xl border border-border bg-card p-5 shadow-sm transition-shadow hover:shadow-md"
-              >
-                <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-primary/10 text-primary">
-                  <Icon className="h-6 w-6" />
+              <li key={title} className="flex gap-5 border-b border-border py-6">
+                <Icon className="mt-1 h-5 w-5 shrink-0 text-clay" strokeWidth={1.5} />
+                <div>
+                  <h3 className="font-display text-lg">{title}</h3>
+                  <p className="mt-1 text-sm text-muted-foreground">{desc}</p>
                 </div>
-                <h3 className="mt-3 font-bold">{title}</h3>
-                <p className="mt-1 text-sm text-muted-foreground">{desc}</p>
-              </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* Depoimento */}
+      <section className="bg-sand py-24">
+        <div className="mx-auto max-w-5xl px-5">
+          <div className="flex justify-center gap-1 text-clay">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <Star key={i} className="h-4 w-4 fill-current" />
+            ))}
+          </div>
+          <div className="mt-10 grid gap-12 md:grid-cols-3">
+            {TESTIMONIALS.map((t) => (
+              <figure key={t.name} className="text-center">
+                <blockquote className="font-display text-lg italic leading-relaxed">“{t.text}”</blockquote>
+                <figcaption className={`${linkCls} mt-5 text-muted-foreground`}>{t.name}</figcaption>
+              </figure>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Sobre + Regras */}
-      <section id="sobre" className="mx-auto max-w-6xl scroll-mt-20 px-4 py-16">
-        <div className="grid gap-10 lg:grid-cols-2">
-          <div>
-            <Trees className="h-8 w-8 text-primary" />
-            <h2 className="font-display mt-3 text-3xl font-bold sm:text-4xl">Sobre o Recanto Barreto</h2>
-            <p className="mt-4 leading-relaxed text-foreground/85">
-              Imagine acordar com o canto dos pássaros, tomar café olhando para a piscina e passar o
-              dia entre um mergulho e uma partida de sinuca. O Recanto Barreto é aquele lugar onde o
-              tempo desacelera: um rancho aconchegante no Jardim Aeroporto, em Presidente Epitácio,
-              pensado para reunir quem você ama.
-            </p>
-            <p className="mt-4 leading-relaxed text-foreground/85">
-              Com 2 quartos (sendo 1 suíte), cozinha equipada, área gourmet com churrasqueira e uma
-              área externa cercada de verde, o rancho acomoda até 10 pessoas com total privacidade —
-              o imóvel inteiro fica só para o seu grupo.
-            </p>
-          </div>
-          <div className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-            <h3 className="font-display text-xl font-bold">Regras da casa</h3>
-            <ul className="mt-4 space-y-4 text-sm">
-              <li className="flex gap-3">
-                <Clock className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                <span>
-                  <strong>Check-in</strong> a partir das 14h e <strong>check-out</strong> até as 12h
-                  (flexível conforme disponibilidade).
-                </span>
-              </li>
-              <li className="flex gap-3">
-                <Volume2 className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                <span>
-                  Som ambiente é bem-vindo, mas pedimos respeito aos vizinhos após as 22h.
-                </span>
-              </li>
-              <li className="flex gap-3">
-                <PawPrint className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                <span>Pets de pequeno porte são permitidos — combine com antecedência.</span>
-              </li>
-              <li className="flex gap-3">
-                <Users className="mt-0.5 h-5 w-5 shrink-0 text-primary" />
-                <span>Capacidade máxima de 10 pessoas, incluindo crianças.</span>
-              </li>
-            </ul>
+      {/* Localização + regras */}
+      <section id="localizacao" className="mx-auto grid max-w-7xl scroll-mt-24 gap-16 px-5 py-24 lg:grid-cols-2 lg:px-10">
+        <div>
+          <p className={`${linkCls} text-clay`}>Localização</p>
+          <h2 className="font-display mt-4 text-4xl">Jardim Aeroporto, Presidente Epitácio</h2>
+          <p className="mt-6 text-lg leading-relaxed text-muted-foreground">
+            A poucos minutos do centro e da orla do Rio Paraná, famosa pelo pôr do sol e pela pesca.
+            O endereço exato é enviado após a confirmação da reserva.
+          </p>
+          <div className="mt-8 flex flex-wrap gap-6">
+            <a
+              href="https://www.google.com/maps/search/?api=1&query=Jardim+Aeroporto,+Presidente+Epit%C3%A1cio,+SP"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`${linkCls} inline-flex items-center gap-2 border-b border-foreground/40 pb-1 hover:text-clay`}
+            >
+              <MapPin className="h-4 w-4" /> Google Maps
+            </a>
+            <a
+              href="https://waze.com/ul?q=Jardim%20Aeroporto%2C%20Presidente%20Epit%C3%A1cio%2C%20SP&navigate=yes"
+              target="_blank"
+              rel="noopener noreferrer"
+              className={`${linkCls} border-b border-foreground/40 pb-1 hover:text-clay`}
+            >
+              Waze
+            </a>
           </div>
         </div>
-      </section>
-
-      {/* Localização */}
-      <section id="localizacao" className="scroll-mt-20 bg-sand py-16">
-        <div className="mx-auto max-w-6xl px-4">
-          <div className="grid items-center gap-10 lg:grid-cols-2">
-            <div>
-              <MapPin className="h-8 w-8 text-primary" />
-              <h2 className="font-display mt-3 text-3xl font-bold sm:text-4xl">Localização e como chegar</h2>
-              <p className="mt-4 leading-relaxed text-foreground/85">
-                Estamos no bairro Jardim Aeroporto, em Presidente Epitácio/SP — a poucos minutos do
-                centro e da orla do Rio Paraná, famosa pelo pôr do sol e pela pesca.
-              </p>
-              <div className="mt-6 flex flex-wrap gap-3">
-                <a
-                  href="https://www.google.com/maps/search/?api=1&query=Jardim+Aeroporto,+Presidente+Epit%C3%A1cio,+SP"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-bold text-primary-foreground transition-transform hover:scale-105"
-                >
-                  <MapPin className="h-4 w-4" />
-                  Abrir no Google Maps
-                </a>
-                <a
-                  href="https://waze.com/ul?q=Jardim%20Aeroporto%2C%20Presidente%20Epit%C3%A1cio%2C%20SP&navigate=yes"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full border-2 border-primary px-5 py-2.5 text-sm font-bold text-primary transition-colors hover:bg-primary/5"
-                >
-                  Abrir no Waze
-                </a>
-              </div>
-              <p className="mt-4 text-sm text-muted-foreground">
-                O endereço exato é enviado no WhatsApp após a confirmação da reserva.
-              </p>
-            </div>
-            <div className="overflow-hidden rounded-2xl shadow-lg">
-              <img
-                src={heroImg}
-                alt="Vista da área externa do Recanto Barreto"
-                loading="lazy"
-                className="h-72 w-full object-cover"
-              />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Depoimentos */}
-      <section className="mx-auto max-w-6xl px-4 py-16">
-        <h2 className="font-display text-center text-3xl font-bold sm:text-4xl">
-          Quem se hospedou, recomenda
-        </h2>
-        <div className="mt-10 grid gap-4 md:grid-cols-3">
-          {TESTIMONIALS.map((t) => (
-            <figure key={t.name} className="rounded-2xl border border-border bg-card p-6 shadow-sm">
-              <div className="flex gap-1 text-sun">
-                {Array.from({ length: 5 }).map((_, i) => (
-                  <Star key={i} className="h-4 w-4 fill-current" />
-                ))}
-              </div>
-              <blockquote className="mt-3 text-sm leading-relaxed text-foreground/85">
-                “{t.text}”
-              </blockquote>
-              <figcaption className="mt-4 text-sm font-bold text-primary">{t.name}</figcaption>
-            </figure>
-          ))}
+        <div className="border border-border bg-card p-8 sm:p-10">
+          <h3 className="font-display text-2xl">Regras da casa</h3>
+          <ul className="mt-6 divide-y divide-border text-sm">
+            {[
+              { icon: Clock, text: "Check-in a partir das 14h e check-out até as 12h." },
+              { icon: Volume2, text: "Som ambiente bem-vindo; silêncio após as 22h." },
+              { icon: PawPrint, text: "Pets de pequeno porte, combinados com antecedência." },
+              { icon: Users, text: "Capacidade máxima de 10 pessoas, incluindo crianças." },
+            ].map(({ icon: Icon, text }) => (
+              <li key={text} className="flex gap-4 py-4">
+                <Icon className="h-5 w-5 shrink-0 text-clay" strokeWidth={1.5} />
+                <span className="text-foreground/80">{text}</span>
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 
       {/* FAQ */}
-      <section id="faq" className="scroll-mt-20 bg-secondary/60 py-16">
-        <div className="mx-auto max-w-3xl px-4">
-          <h2 className="font-display text-center text-3xl font-bold sm:text-4xl">Dúvidas frequentes</h2>
-          <div className="mt-8 space-y-3">
-            {FAQ.map((item, i) => (
-              <div key={item.q} className="overflow-hidden rounded-xl border border-border bg-card">
-                <button
-                  onClick={() => setOpenFaq(openFaq === i ? null : i)}
-                  className="flex w-full items-center justify-between gap-4 px-5 py-4 text-left font-bold"
-                  aria-expanded={openFaq === i}
-                >
-                  {item.q}
-                  <ChevronRight
-                    className={`h-5 w-5 shrink-0 transition-transform ${openFaq === i ? "rotate-90" : ""}`}
-                  />
-                </button>
-                {openFaq === i && (
-                  <p className="px-5 pb-4 text-sm leading-relaxed text-muted-foreground">{item.a}</p>
-                )}
-              </div>
-            ))}
-          </div>
+      <section id="faq" className="mx-auto max-w-3xl scroll-mt-24 px-5 pb-24">
+        <h2 className="font-display text-center text-4xl">Dúvidas frequentes</h2>
+        <div className="mt-10 border-t border-border">
+          {FAQ.map((item, i) => (
+            <div key={item.q} className="border-b border-border">
+              <button
+                onClick={() => setOpenFaq(openFaq === i ? null : i)}
+                className="flex w-full items-center justify-between gap-4 py-6 text-left font-display text-lg"
+                aria-expanded={openFaq === i}
+              >
+                {item.q}
+                <span className="text-2xl font-light text-clay">{openFaq === i ? "−" : "+"}</span>
+              </button>
+              {openFaq === i && <p className="pb-6 leading-relaxed text-muted-foreground">{item.a}</p>}
+            </div>
+          ))}
         </div>
       </section>
 
-      {/* CTA final */}
-      <section className="bg-forest py-16 text-center text-forest-foreground">
-        <div className="mx-auto max-w-2xl px-4">
-          <h2 className="font-display text-3xl font-bold sm:text-4xl">
-            Garanta sua data antes que acabe
-          </h2>
-          <p className="mt-3 text-forest-foreground/85">
-            Finais de semana e feriados costumam esgotar rápido — e ainda dá para dividir em até 3
-            vezes. Chame agora e faça seu orçamento sem compromisso.
+      {/* CTA final com imagem */}
+      <section className="relative overflow-hidden">
+        <img src={churrasqueira} alt="" loading="lazy" className="absolute inset-0 h-full w-full object-cover" />
+        <div className="absolute inset-0 bg-forest/80" />
+        <div className="relative mx-auto max-w-3xl px-5 py-28 text-center text-forest-foreground">
+          <p className={`${linkCls} text-sun`}>Reservas</p>
+          <h2 className="font-display mt-5 text-4xl sm:text-5xl">Sua próxima estadia começa com uma mensagem</h2>
+          <p className="mx-auto mt-6 max-w-xl text-forest-foreground/80">
+            Feriados costumam esgotar rápido. Consulte datas e parcele em até 3x.
           </p>
           <a
             href={WHATSAPP_URL}
             target="_blank"
             rel="noopener noreferrer"
-            className="mt-8 inline-flex items-center gap-2 rounded-full bg-sun px-8 py-4 text-lg font-extrabold text-sun-foreground shadow-xl transition-transform hover:scale-105"
+            className={`${linkCls} mt-10 inline-flex items-center gap-3 bg-sun px-8 py-4 text-sun-foreground hover:bg-forest-foreground`}
           >
-            <WhatsAppIcon className="h-6 w-6" />
+            <WhatsAppIcon className="h-4 w-4" />
             Falar no WhatsApp
           </a>
         </div>
       </section>
 
       {/* Rodapé */}
-      <footer className="bg-foreground py-10 text-background/80">
-        <div className="mx-auto grid max-w-6xl gap-8 px-4 sm:grid-cols-3">
-          <div>
-            <p className="font-display text-lg font-bold text-background">Recanto Barreto</p>
-            <p className="mt-2 text-sm">Seu refúgio em Presidente Epitácio/SP.</p>
-          </div>
-          <div>
-            <p className="text-sm font-bold text-background">Contato</p>
-            <a
-              href={WHATSAPP_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="mt-2 inline-flex items-center gap-2 text-sm hover:text-background"
-            >
-              <Phone className="h-4 w-4" /> (18) 98106-1762
-            </a>
-            <p className="mt-1 flex items-center gap-2 text-sm">
-              <MapPin className="h-4 w-4" /> Jardim Aeroporto, Presidente Epitácio/SP
-            </p>
-          </div>
-          <div>
-            <p className="text-sm font-bold text-background">Links rápidos</p>
-            <div className="mt-2 flex flex-col gap-1 text-sm">
-              {navItems.map((item) => (
-                <a key={item.href} href={item.href} className="hover:text-background">
-                  {item.label}
-                </a>
-              ))}
-            </div>
-          </div>
+      <footer className="bg-background py-12">
+        <div className="mx-auto flex max-w-7xl flex-col items-center gap-4 px-5 text-center text-sm text-muted-foreground">
+          <p className="font-display text-2xl italic text-foreground">
+            Recanto <span className="not-italic font-semibold">Barreto</span>
+          </p>
+          <a href={WHATSAPP_URL} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 hover:text-clay">
+            <Phone className="h-4 w-4" /> (18) 98106-1762
+          </a>
+          <p>Jardim Aeroporto · Presidente Epitácio/SP</p>
+          <p className="text-xs">© {new Date().getFullYear()} Recanto Barreto — Locação por temporada.</p>
         </div>
-        <p className="mt-8 text-center text-xs text-background/50">
-          © {new Date().getFullYear()} Recanto Barreto — Locação por temporada.
-        </p>
       </footer>
 
       {/* Botão flutuante WhatsApp */}
@@ -612,7 +575,7 @@ function Index() {
         target="_blank"
         rel="noopener noreferrer"
         aria-label="Conversar no WhatsApp"
-        className="animate-whatsapp-pulse fixed bottom-5 right-5 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-[oklch(0.65_0.18_145)] text-white shadow-xl transition-transform hover:scale-110"
+        className="animate-whatsapp-pulse fixed bottom-5 right-5 z-40 flex h-14 w-14 items-center justify-center rounded-full bg-whatsapp text-whatsapp-foreground shadow-xl transition-transform hover:scale-110"
       >
         <WhatsAppIcon className="h-7 w-7" />
       </a>
